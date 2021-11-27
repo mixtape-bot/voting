@@ -1,7 +1,7 @@
 mod voting;
 
 use actix_web::{web, get, HttpResponse, Scope, Responder};
-use crate::common::MessageResponse;
+use serde_json::json;
 
 pub fn v1() -> Scope {
     web::scope("/v1")
@@ -11,7 +11,7 @@ pub fn v1() -> Scope {
 
 #[get("")]
 async fn index() -> impl Responder {
-    HttpResponse::Ok().json(MessageResponse::new(String::from("hello from mixtape api"), true))
+    HttpResponse::Ok().json(json!({ "message": "hello from mixtape api", "success": true }))
 }
 
 
