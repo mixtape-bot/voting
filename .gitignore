@@ -1,0 +1,11 @@
+# rust stuff
+/target
+
+# configuration
+.env*
+!.env.example
+api.toml
+
+# editor settings
+.idea
+.vscode
