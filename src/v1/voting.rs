@@ -25,7 +25,7 @@ struct TopGGVote {
     is_weekend: bool
 }
 
-fn top_gg_vote_key(bot: &String, user: &String) -> String {
+fn top_gg_vote_key(bot: &str, user: &str) -> String {
     format!("votes.top_gg:{}.{}", bot, user)
 }
 
