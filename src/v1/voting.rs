@@ -73,7 +73,7 @@ async fn post_top_gg_vote(
     webhook.send(|m| m.embed(|e| {
         let desc = format!("Received a vote for <@{bot}> `{bot}` from <@{user}> `{user}`", bot = payload.bot, user = payload.user);
 
-        e.description(&*desc)
+        e.description(&desc)
             .color(config.votes.webhook.color)
             .footer("Now go enjoy your perks!", None, None)
     }))
