@@ -1,4 +1,3 @@
-use std::fmt::Write;
 use actix_web::{HttpRequest, post, Responder, Scope, web};
 use actix_web::http::header::AUTHORIZATION;
 use log::error;

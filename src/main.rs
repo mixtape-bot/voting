@@ -1,7 +1,6 @@
 mod v1;
 mod config;
 
-use std::fmt::{Debug, Write};
 use actix_web::{HttpResponse, App, HttpServer, Responder, middleware, web, HttpResponseBuilder, ResponseError};
 use actix_web::http::header::SERVER;
 use log::info;
