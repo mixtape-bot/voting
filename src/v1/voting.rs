@@ -7,7 +7,7 @@ use serde_json::json;
 use crate::config::ApiConfig;
 use crate::{HttpResponse, Redis};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 enum TopGGVoteType {
     Test,
@@ -20,14 +20,10 @@ struct TopGGVote {
     bot: String,
     user: String,
     #[serde(rename(serialize = "type", deserialize = "type"))]
-    vote_type: String,
+    vote_type: TopGGVoteType,
     query: Option<String>,
     #[serde(default)]
     is_weekend: bool
-}
-
-fn top_gg_vote_key(bot: &str, user: &str) -> String {
-    format!("votes.top_gg:{}.{}", bot, user)
 }
 
 pub fn voting() -> Scope {
@@ -58,10 +54,12 @@ async fn post_top_gg_vote(req: HttpRequest, config: web::Data<ApiConfig>, redis:
     }
 
     /* store the vote in redis */
-    let payload_json = serde_json::to_string(&*payload).unwrap();
+    let key_type = if payload.vote_type == TopGGVoteType::Test { "test" } else { "upvote" };
+    let key = format!("top_gg.{}:{}.{}", key_type, payload.bot, payload.user);
+
     redis
         .get()
-        .send_and_forget(resp_array!["SET", top_gg_vote_key(&payload.bot, &payload.user), payload_json, "EX", "720"]);
+        .send_and_forget(resp_array!["SET", key, serde_json::to_string(&*payload).unwrap(), "EX", "720"]);
 
     /* respond */
     HttpResponse::Ok().json(json!({ "message": "thanks for that", "success": true }))
