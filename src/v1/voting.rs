@@ -67,7 +67,7 @@ async fn post_top_gg_vote(
 
     redis
         .get()
-        .send_and_forget(resp_array!["SET", key, serde_json::to_string(&*payload).unwrap(), "EX", "720"]);
+        .send_and_forget(resp_array!["SET", key, serde_json::to_string(&payload).unwrap(), "EX", "720"]);
 
     /* send webhook */
     webhook.send(|m| m.embed(|e| {
