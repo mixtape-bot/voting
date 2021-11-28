@@ -2,8 +2,13 @@
 host = "0.0.0.0"
 port = 7613
 
-    [api.auth]
-    top_gg = "test auth"
+    [api.votes]
+        [api.votes.webhook]
+        url = ""
+        color = 33333333
+
+        [api.votes.auth]
+        top_gg = "hi"
 
     [api.redis]
     host = "127.0.0.1"

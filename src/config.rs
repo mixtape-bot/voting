@@ -6,8 +6,20 @@ use serde::Deserialize;
 pub struct ApiConfig {
     pub host: String,
     pub port: i16,
-    pub auth: Auth,
     pub redis: Redis,
+    pub votes: Votes,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct Votes {
+    pub webhook: Webhook,
+    pub auth: Auth,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct Webhook {
+    pub url: String,
+    pub color: i32,
 }
 
 #[derive(Deserialize, Clone)]

@@ -1,11 +1,13 @@
 mod v1;
 mod config;
 
+use std::fmt::{Debug, Write};
 use actix_web::{HttpResponse, App, HttpServer, Responder, middleware, web, HttpResponseBuilder, ResponseError};
 use actix_web::http::header::SERVER;
 use log::info;
 use serde_json::json;
 use redis_async::client::PairedConnection;
+use webhook::Webhook;
 
 #[derive(Clone)]
 pub struct Redis {
@@ -46,6 +48,9 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Unable to connect to redis");
 
+    /* create webhook client */
+    let webhook = Webhook::from_url(&*config.votes.webhook.url);
+
     /* start the server */
     info!("Starting API Server");
 
@@ -62,6 +67,7 @@ async fn main() -> std::io::Result<()> {
         .app_data(web::Data::new(config.clone()))
         .app_data(web::Data::new(redis.clone()))
         .app_data(web::Data::new(json_config.clone()))
+        .app_data(web::Data::new(webhook.clone()))
         .wrap(middleware::Logger::default())
         .wrap(middleware::NormalizePath::new(middleware::TrailingSlash::Trim))
         .wrap(middleware::DefaultHeaders::new()

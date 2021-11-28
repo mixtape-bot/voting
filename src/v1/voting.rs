@@ -1,17 +1,20 @@
-use actix_web::{Scope, web, post, HttpRequest, Responder};
+use std::fmt::Write;
+use actix_web::{HttpRequest, post, Responder, Scope, web};
 use actix_web::http::header::AUTHORIZATION;
 use log::error;
 use redis_async::resp_array;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
-use crate::config::ApiConfig;
+use webhook::Webhook;
+
 use crate::{HttpResponse, Redis};
+use crate::config::ApiConfig;
 
 #[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 enum TopGGVoteType {
     Test,
-    Upvote
+    Upvote,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -23,7 +26,7 @@ struct TopGGVote {
     vote_type: TopGGVoteType,
     query: Option<String>,
     #[serde(default)]
-    is_weekend: bool
+    is_weekend: bool,
 }
 
 pub fn voting() -> Scope {
@@ -32,15 +35,21 @@ pub fn voting() -> Scope {
 }
 
 #[post("/top-gg")]
-async fn post_top_gg_vote(req: HttpRequest, config: web::Data<ApiConfig>, redis: web::Data<Redis>, payload: web::Json<TopGGVote>) -> impl Responder {
+async fn post_top_gg_vote(
+    req: HttpRequest,
+    config: web::Data<ApiConfig>,
+    webhook: web::Data<Webhook>,
+    redis: web::Data<Redis>,
+    payload: web::Json<TopGGVote>,
+) -> impl Responder {
     let auth = match req.headers().get(AUTHORIZATION) {
         Some(value) => match value.to_str() {
             Err(e) => {
                 error!("Error occurred while validating top.gg auth: {}", e);
 
                 return HttpResponse::BadRequest()
-                    .json(json!({ "message": "Unable to validate authorization", "success": false }))
-            },
+                    .json(json!({ "message": "Unable to validate authorization", "success": false }));
+            }
             Ok(value) => value.to_string()
         },
         _ => return HttpResponse::Forbidden()
@@ -48,9 +57,9 @@ async fn post_top_gg_vote(req: HttpRequest, config: web::Data<ApiConfig>, redis:
     };
 
     /* check if their authentication is valid */
-    if config.auth.top_gg != auth {
+    if config.votes.auth.top_gg != auth {
         return HttpResponse::Unauthorized()
-            .json(json!({ "message": "Invalid authorization was provided", "success": false }))
+            .json(json!({ "message": "Invalid authorization was provided", "success": false }));
     }
 
     /* store the vote in redis */
@@ -60,6 +69,17 @@ async fn post_top_gg_vote(req: HttpRequest, config: web::Data<ApiConfig>, redis:
     redis
         .get()
         .send_and_forget(resp_array!["SET", key, serde_json::to_string(&*payload).unwrap(), "EX", "720"]);
+
+    /* send webhook */
+    webhook.send(|m| m.embed(|e| {
+        let desc = format!("Received a vote for <@{bot}> `{bot}` from <@{user}> `{user}`", bot = payload.bot, user = payload.user);
+
+        e.description(&*desc)
+            .color(config.votes.webhook.color)
+            .footer("Now go enjoy your perks!", None, None)
+    }))
+        .await
+        .expect("Unable to post webhook");
 
     /* respond */
     HttpResponse::Ok().json(json!({ "message": "thanks for that", "success": true }))
