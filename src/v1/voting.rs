@@ -22,6 +22,7 @@ struct TopGGVote {
     #[serde(rename(serialize = "type", deserialize = "type"))]
     vote_type: String,
     query: Option<String>,
+    #[serde(default)]
     is_weekend: bool
 }
 
