@@ -1,5 +1,5 @@
 use figment::Figment;
-use figment::providers::{Format, Toml};
+use figment::providers::{Env, Format, Toml};
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone)]
@@ -36,6 +36,7 @@ pub struct Redis {
 pub fn load_config() -> Result<ApiConfig, figment::Error> {
     Figment::new()
         .merge(Toml::file("api.toml").nested())
+        .merge(Env::raw())
         .select("api")
         .extract()
 }

@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+    mixtape-api:
+        restart: unless-stopped
+        build:
+            context: .
+        networks:
+            - api
+        depends_on:
+            - redis
+        environment:
+            - RUST_LOG=info
+            - API_REDIS_HOST=redis
+    redis:
+        image: redis:alpine
+        restart: unless-stopped
+        networks:
+            - api
+
+networks:
+    api:
+        internal: true
