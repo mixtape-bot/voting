@@ -56,7 +56,7 @@ async fn post_top_gg_vote(
     };
 
     /* check if their authentication is valid */
-    if config.votes.auth.top_gg != auth {
+    if config.auth.top_gg != auth {
         return HttpResponse::Unauthorized()
             .json(json!({ "message": "Invalid authorization was provided", "success": false }));
     }

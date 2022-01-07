@@ -1,8 +1,12 @@
 ### chef thing
-FROM lukemathwalker/cargo-chef:latest-rust-1.53.0 AS chef
+FROM ekidd/rust-musl-builder:1.51.0 AS chef
+
+# install cargo
+USER root
+RUN cargo install cargo-chef
 
 # create work directory
-WORKDIR /api
+WORKDIR /voting
 
 ### planner thing
 FROM chef AS planner
@@ -13,24 +17,24 @@ RUN cargo chef prepare --recipe-path recipe.json
 ### builder thing
 FROM chef AS builder
 
-COPY --from=planner /api/recipe.json recipe.json
+COPY --from=planner /voting/recipe.json recipe.json
 
 # Build dependencies - this is the caching Docker layer!
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
 
 # Build application
 COPY . .
-RUN cargo build --release --bin api
+RUN cargo build --release --target x86_64-unknown-linux-musl --bin voting
 
 ### runner thing
-FROM debian:bullseye-slim AS runtime
+FROM alpine AS runtime
 
 # set work directory
-WORKDIR /api
+WORKDIR /voting
 
 # copy over
-COPY api.toml .
-COPY --from=builder /api/target/release/api /usr/local/bin
+COPY voting.toml .
+COPY --from=builder /voting/target/x86_64-unknown-linux-musl/release/voting .
 
 # run
-ENTRYPOINT ["/usr/local/bin/api"]
+ENTRYPOINT ["voting"]

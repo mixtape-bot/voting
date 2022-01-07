@@ -1,11 +1,11 @@
 version: "3.9"
 services:
-    mixtape-api:
+    voting:
         restart: unless-stopped
         build:
             context: .
         networks:
-            - api
+            - voting
         depends_on:
             - redis
         environment:
@@ -15,8 +15,7 @@ services:
         image: redis:alpine
         restart: unless-stopped
         networks:
-            - api
+            - voting
 
 networks:
-    api:
-        internal: true
+    voting:

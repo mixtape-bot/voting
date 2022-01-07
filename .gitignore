@@ -4,7 +4,7 @@
 # configuration
 .env*
 !.env.example
-api.toml
+voting.toml
 
 # editor settings
 .idea

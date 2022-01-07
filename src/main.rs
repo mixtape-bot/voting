@@ -48,10 +48,10 @@ async fn main() -> std::io::Result<()> {
         .expect("Unable to connect to redis");
 
     /* create webhook client */
-    let webhook = Webhook::from_url(&*config.votes.webhook.url);
+    let webhook = Webhook::from_url(&*config.webhook.url);
 
     /* start the server */
-    info!("Starting API Server");
+    info!("Starting Voting Server");
 
     let addr = format!("{}:{}", config.host, config.port);
     let json_config = web::JsonConfig::default()

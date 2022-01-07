@@ -11,7 +11,5 @@ pub fn v1() -> Scope {
 
 #[get("")]
 async fn index() -> impl Responder {
-    HttpResponse::Ok().json(json!({ "message": "hello from mixtape api", "success": true }))
+    HttpResponse::Ok().json(json!({ "message": "hello from mixtape's voting api", "success": true }))
 }
-
-

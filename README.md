@@ -1,6 +1,6 @@
-# mixtape-bot/api
+# mixtape-bot/votes
 
-👽️ does things
+👽️ does stuff relating to votes
 
 - **current version:** v1
 
